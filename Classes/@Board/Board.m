@@ -7,6 +7,9 @@ classdef Board
         scores      % [Int]     Vector with score for each player
         board       % {Square}  Board composed of cell array of squares
         grid        % [Dbl]     Grid containing data for visualizing board
+        turnNo      % Int       Turn number
+        turnPlayer  % Int       Active player
+        A           % [Int]     Current adjacency matrix of the board
     end
     
     % Class Methods (public)
@@ -49,9 +52,9 @@ classdef Board
             for i = 1:15
                 for j = 1:15
                     counter = counter + 1;
-                    row = i; column = j; multiplier = Mult.none; letter = Letter.null;
-                    temp = table(row, column, multiplier, letter);
-                    obj.board = [obj.board; temp];
+                    column = i; row = j; index = counter; multiplier = Mult.none; 
+                    letter = Letter.null; temp = table(row, column, index, ...
+                        multiplier, letter); obj.board = [obj.board; temp];
                 end
             end
             
@@ -126,7 +129,13 @@ classdef Board
             obj.board.multiplier(obj.board.row == 13 & obj.board.column == 9) = Mult.doubleLetter;
             obj.board.multiplier(obj.board.row == 15 & obj.board.column == 4) = Mult.doubleLetter;
             obj.board.multiplier(obj.board.row == 15 & obj.board.column == 12) = Mult.doubleLetter;
-            
+
+            % Initialize turn counter and active player
+            obj.turnNo = 1; obj.turnPlayer = 1;
+
+            % Initialize adjacency matrix of the board
+            obj.A = eye(15^2);
+
         end
         
         % Dispense tiles to players, as needed
@@ -137,6 +146,11 @@ classdef Board
         
         % Place a tile on the board
         [obj, isValid] = placeTile(obj, player, character, row, column)
+
+        % Returns a table of all paths, whether they are valid (or,
+        % disjointed), the player who last modified them, and whether they
+        % contain any grammatical error
+        obj = allPaths(obj)
         
     end
     

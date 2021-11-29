@@ -24,14 +24,25 @@ character = utils.assign("Board.placeTile()", 2, character, 'Letter', character)
 % Construct the player name
 playerName = "player" + string(player);
 
-% If the player possesses the tile...
-if obj.tiles.(playerName)(obj.tiles.character == character) > 0
+% If the player possesses the tile and there is no tile on the square...
+if obj.tiles.(playerName)(obj.tiles.character == character) > 0 && ...
+        obj.board.letter(obj.board.row == row & obj.board.column == column) == Letter.null
     
     % Place the tile on the board, and remove from inventory
     obj.board.letter(obj.board.row == row & obj.board.column == column) = character;
     obj.tiles.(playerName)(obj.tiles.character == character) = ...
         obj.tiles.(playerName)(obj.tiles.character == character) - 1;
-    
+
+    % UPDATE ADJACENCY MATRIX
+    % If there is a tile in any adjoining square, add an edge
+    idx = sub2ind([15, 15], row, column);
+    squares = utils.adjacent(idx);
+    for i = 1:length(squares)
+        if obj.board.letter(obj.board.index == squares(i)) ~= Letter.null
+            obj.A(idx, squares(i)) = 1; obj.A(squares(i), idx) = 1;
+        end
+    end
+
 else
     
     % If the player cannot make the move, display error message and return
